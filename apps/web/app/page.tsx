@@ -2,9 +2,8 @@ import { Sidebar } from "@/components/sidebar";
 
 export default function PortfolioPage() {
   return (
-    <div className="flex min-h-screen">
-      <Sidebar current="/" />
-      <main className="flex-1 p-6">
+    <Sidebar>
+      <main>
         <h1 className="text-2xl font-semibold">Portfolio</h1>
         <p className="mt-1 text-sm text-muted-foreground">
           Market value, cash, top holdings, and the income-sleeve gap. Charts land here
@@ -17,7 +16,7 @@ export default function PortfolioPage() {
           <Metric label="Income Sleeve" value="—" />
         </div>
       </main>
-    </div>
+    </Sidebar>
   );
 }
 
