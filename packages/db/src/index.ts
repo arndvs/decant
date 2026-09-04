@@ -4,6 +4,7 @@ import * as schema from "./schema.js";
 export * from "./engines/realized.js";
 export * from "./engines/acb.js";
 export * from "./engines/dividends.js";
+export * from "./engines/perf.js";
 
 /** The SQLite file lives in the repo's data/ (gitignored). */
 export function createDb(path = process.env.DECANT_DB ?? "./data/decant.db") {
