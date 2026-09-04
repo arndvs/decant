@@ -1,0 +1,21 @@
+{
+  "name": "decant",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Decant — local-first portfolio tracking. The ledger, the line, and the plan.",
+  "packageManager": "pnpm@10.33.2",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "dev": "pnpm --filter web dev",
+    "build": "pnpm --filter web build",
+    "typecheck": "pnpm -r typecheck",
+    "lint": "pnpm -r lint",
+    "test": "pnpm -r test",
+    "db:migrate": "pnpm --filter db db:migrate",
+    "db:studio": "pnpm --filter db db:studio",
+    "ingest": "pnpm --filter web ingest"
+  },
+  "devDependencies": {}
+}
