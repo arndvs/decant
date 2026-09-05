@@ -20,12 +20,12 @@
 |---|---|
 | id | PK |
 | schwab_hash | UNIQUE — from `/trader/v1/accounts/accountNumbers` |
-| display_name | e.g. "AccountC" |
+| display_name | e.g. "Inherited IRA" (operator's own account label) |
 | account_type | `inherited_ira` \| `traditional_ira` \| `roth_ira` \| `taxable` |
 | gains_taxable | 0 for IRAs — trims are free |
 | losses_deductible | 0 for IRAs — no harvesting |
 | wash_sale_applies | |
-| must_empty_by | DATE, NULL if no deadline (2031 for AccountC) |
+| must_empty_by | DATE, NULL if no deadline (e.g. an inherited-IRA wind-down) |
 | rmd_required | default 0 |
 
 ### securities
@@ -171,7 +171,7 @@ WHERE open_quantity > 0
 GROUP BY account_id, security_id;
 ```
 
-Keeps the sheet's $25,000 ACB gate + the +$150.00 realized gate as *proof the port is correct*, then drop the view once the lot engine is trusted.
+Keeps the sheet's verified ACB + realized-gains totals as *proof the port is correct*, then drop the view once the lot engine is trusted.
 
 ---
 

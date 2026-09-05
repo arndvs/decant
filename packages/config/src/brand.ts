@@ -11,7 +11,7 @@ export const brand = {
   titleSuffix: "· Decant",
 } as const;
 
-/** Default portfolio accounts. */
+/** Default portfolio accounts (shape — an operator names their own). */
 export const ACCOUNTS = ["AccountA", "AccountB", "AccountC"] as const;
 
 /** Category set (from the tracker's Mom-specific taxonomy). */
@@ -49,10 +49,9 @@ export const IRA_DEADLINE = "2031-12-31";
 /** Initial cash buffer: 2 years of estimated tax bills. */
 export const CASH_BUFFER_INITIAL = 11500;
 
-/** Commission/fee-free OTC tickers that need manual price entry (yfinance may not quote). */
-export const MANUAL_PRICE_TICKERS = [
-  "AAAS", "AAAE", "AAAR", "AAAF", "AABE", "AABB", "AABC", "AABD", "AAAA", "AABF",
-] as const;
+/** Tickers that need manual price entry (an operator's quote source may not
+ *  price some OTC/foreign names). SHAPE only — populate per operator. */
+export const MANUAL_PRICE_TICKERS = ["<unquoted_ticker>"] as const;
 
 /** Income-sleeve tickers — the dividend-income growth destination (20% target).
  *  From the portfolio direction plan D2/D8 + v3 Slice 3. JEPI/JEPQ are candidates. */

@@ -19,7 +19,7 @@ import {
   ChartTooltipContent,
 } from "@/components/ui/chart"
 
-/** Realized gains by account — the "+$150.00 / −$46k phantom" story. */
+/** Realized gains by account — the phantom-loss-vs-gains story. */
 export type RealizedByAccountData = {
   account: string
   realized: number

@@ -16,27 +16,27 @@ const strategy: RebalanceStrategy = {
   },
   positionCap: 0.08,
   iraDeadlineYear: 2031,
+  inheritedIraAccount: "AcctC",
 };
 
-/** Positions reproducing the sheet's combined weights (Uranium 35.3%, etc.). */
+/** Positions — synthetic, shaped like a uranium-heavy tilted portfolio. */
 const positions: Position[] = [
-  // ~$141K portfolio. Uranium-heavy to test the gap + cap.
-  { symbol: "AAAF", account: "AccountC", category: "Uranium & Nuclear", marketValue: 35000 },
-  { symbol: "EU", account: "AccountC", category: "Uranium & Nuclear", marketValue: 5000 },
-  { symbol: "DNN", account: "AccountC", category: "Uranium & Nuclear", marketValue: 3800 },
-  { symbol: "AAAG", account: "AccountC", category: "Uranium & Nuclear", marketValue: 1200 },
-  { symbol: "AAAA", account: "AccountC", category: "Lithium & Rare Earths", marketValue: 3000 },
-  { symbol: "WPM", account: "AccountC", category: "Precious Metals", marketValue: 4000 },
-  { symbol: "FNV", account: "AccountC", category: "Precious Metals", marketValue: 7000 },
-  { symbol: "AAAB", account: "AccountC", category: "Precious Metals", marketValue: 8000 },
-  { symbol: "SM", account: "AccountA", category: "Precious Metals", marketValue: 4000 },
-  // Income sleeve is TINY in reality (~1.9% of portfolio per README 09-03).
-  // Two modest sleeves make it underweight vs the 20% target.
-  { symbol: "AAAH", account: "AccountA", category: "Dividend Income ETFs", marketValue: 1500 },
-  { symbol: "AAAJ", account: "AccountA", category: "Dividend Income ETFs", marketValue: 800 },
-  { symbol: "REI", account: "AccountA", category: "Oil & Gas Producers", marketValue: 10000 },
-  { symbol: "VALE", account: "AccountB", category: "Base Metals", marketValue: 6000 },
-  { symbol: "AAAB", account: "AccountB", category: "Precious Metals", marketValue: 200 },
+  // Synthetic ~$90K portfolio. Uranium-heavy to test the gap + cap.
+  { symbol: "URAN1", account: "AcctC", category: "Uranium & Nuclear", marketValue: 35000 },
+  { symbol: "URAN2", account: "AcctC", category: "Uranium & Nuclear", marketValue: 5000 },
+  { symbol: "URAN3", account: "AcctC", category: "Uranium & Nuclear", marketValue: 3800 },
+  { symbol: "URAN4", account: "AcctC", category: "Uranium & Nuclear", marketValue: 1200 },
+  { symbol: "LITH1", account: "AcctC", category: "Lithium & Rare Earths", marketValue: 3000 },
+  { symbol: "PMET1", account: "AcctC", category: "Precious Metals", marketValue: 4000 },
+  { symbol: "PMET2", account: "AcctC", category: "Precious Metals", marketValue: 7000 },
+  { symbol: "PMET3", account: "AcctC", category: "Precious Metals", marketValue: 8000 },
+  { symbol: "PMET4", account: "AcctA", category: "Precious Metals", marketValue: 4000 },
+  // Income sleeve is tiny → underweight vs the 20% target.
+  { symbol: "INCM1", account: "AcctA", category: "Dividend Income ETFs", marketValue: 1500 },
+  { symbol: "INCM2", account: "AcctA", category: "Dividend Income ETFs", marketValue: 800 },
+  { symbol: "OILG1", account: "AcctA", category: "Oil & Gas Producers", marketValue: 10000 },
+  { symbol: "BMET1", account: "AcctB", category: "Base Metals", marketValue: 6000 },
+  { symbol: "PMET3", account: "AcctB", category: "Precious Metals", marketValue: 200 },
 ];
 
 describe("rebalance engine — whole-portfolio category model", () => {
@@ -49,19 +49,18 @@ describe("rebalance engine — whole-portfolio category model", () => {
     expect(res.total).toBeCloseTo(89500, 2);
   });
 
-  it("per-account matrix gives the AccountC uranium exposure", () => {
+  it("per-account matrix gives the AcctC uranium exposure", () => {
     const res = rebalance(positions, strategy);
     const inhUranium = res.accountMatrix.find(
-      (r) => r.account === "AccountC" && r.category === "Uranium & Nuclear",
+      (r) => r.account === "AcctC" && r.category === "Uranium & Nuclear",
     )!;
     expect(inhUranium.marketValue).toBeCloseTo(35000 + 5000 + 3800 + 1200, 2);
-    // The sheet's per-account value didn't exist — now it's native GROUP BY.
     expect(res.accountMatrix.length).toBeGreaterThan(3);
   });
 
-  it("flags an over-cap position (a $35K position in a $118K portfolio = 29.6%)", () => {
+  it("flags an over-cap position (a $35K position in an ~$90K portfolio = ~29%)", () => {
     const res = rebalance(positions, strategy);
-    const elvuf = res.positionCaps.find((c) => c.symbol === "AAAF")!;
+    const elvuf = res.positionCaps.find((c) => c.symbol === "URAN1")!;
     expect(elvuf.overCap).toBe(true);
     expect(elvuf.excessDollars).toBeGreaterThan(20000);
     expect(res.overCapDollarsToSell).toBeGreaterThan(20000);
@@ -69,21 +68,20 @@ describe("rebalance engine — whole-portfolio category model", () => {
 
   it("distinguishes under-cap positions", () => {
     const res = rebalance(positions, strategy);
-    const sm = res.positionCaps.find((c) => c.symbol === "SM")!;
-    expect(sm.overCap).toBe(false); // $4K / $94.5K = 4.2% < 8%
+    const sm = res.positionCaps.find((c) => c.symbol === "PMET4")!;
+    expect(sm.overCap).toBe(false);
   });
 
-  it("every IRA holding is classified sell-or-distribute + sequenced", () => {
+  it("every AcctC holding is classified sell-or-distribute + sequenced", () => {
     const res = rebalance(positions, strategy);
     for (const r of res.iraSort) {
       expect(["sell", "distribute"]).toContain(r.exit);
       expect(r.sequence).toBeGreaterThanOrEqual(0);
     }
-    // The over-cap uranium names → sell; compounders under cap → distribute
-    expect(res.iraSellList).toContain("AAAF");
-    expect(res.iraDistributeList).toContain("WPM");
-    expect(res.iraDistributeList).toContain("FNV");
-    // Sell-first, then distribute by sequence
+    // Over-cap uranium → sell; PMET1/PMET2 under cap → distribute
+    expect(res.iraSellList).toContain("URAN1");
+    expect(res.iraDistributeList).toContain("PMET1");
+    expect(res.iraDistributeList).toContain("PMET2");
     expect(res.iraSellList.length + res.iraDistributeList.length).toBe(
       res.iraSort.length,
     );

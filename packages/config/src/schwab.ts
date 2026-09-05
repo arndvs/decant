@@ -1,127 +1,57 @@
 /**
- * Schwab bridge — the mapping + taxonomy knowledge that exists ONLY in the
- * replay scripts (trade-log-replay2.py) and would be lost in a naive port.
+ * Schwab bridge — the mapping + taxonomy that turns a Schwab transaction
+ * export into Decant's canonical form.
  *
- * Source of truth: `~/cmd-private/working/tmp/trade-log-replay2.py` (the APPLIED
- * replay — the only round that reconciles 74/74). Do NOT use replay-analysis.py
- * or trade-log-replay.py (v1): they carry two-hop chains and missing maps.
+ * The bridge is deliberately SHAPE-ONLY in this public repo: the specific
+ * account names, export filenames, and symbol↔ticker drift mappings belong
+ * to whoever runs Decant (their broker, their holdings). An operator
+ * populates these at runtime or from a private config file.
  *
- * These are the credentials of the ingestor: when Decant reads Schwab
- * /transactions, this module decides how each raw symbol resolves to the
- * ticker in today's positions.
+ * The ACTION_TAXONOMY here is the COMPLETE Schwab XML action set — that's
+ * shared, public knowledge about the Schwab export format itself and is
+ * safe to ship.
  */
 
-/** Schwab → canonical account-name map (from XML/CSV filenames). */
+/** Schwab → canonical account-name map. SHAPE only — populate per operator. */
 export const ACCOUNT_MAP = {
-  "AccountA": "AccountA",
-  "Designated_Bene_Individual": "AccountB",
-  "AccountC_from_IRA": "AccountC",
+  "<account_xml_prefix>": "<canonical_account_name>",
 } as const;
 
-/** Raw symbol → current ticker, per account. Applied round only. */
+/**
+ * Raw symbol → current ticker, per account. The bridge an operator builds
+ * from THEIR Schwab export (a ticker that changed on a merger, or a raw
+ * CUSIP, resolves to today's symbol). SHAPE only.
+ */
 export const DRIFT = {
-  AccountA: {
-    AABG: "AAAB",
-    AABH: "AAAT",
-    "111111111": "AAAT",
-    AABI: "AAAQ",
-    AABJ: "AAAS",
-    AABK: "AAAU",
-    AAAU: "AAAU",
-    AABO: "AAAW",
-    AABL: "AAAV",
-    AABM: "AAAA",
-    AABN: "AAAA",
-    "222222222": "AAAA",
-    "333333333": "AAAC",
-    "333333334": "AAAC",
-    "444444444": "AAAR",
-    AABP: "AAAR",
-    "555555555": "AAAB",
-    "666666666": "AAAT",
-    "777777777": "AABO",
-    "888888888": "AAAQ",
-    "999999999": "AAAP",
-    "101010101": "AAAD",
-    "202020202": "AAZ",
-    "303030303": "AABA",
-    505050505: "AAAP",
-    "404040404": "AAAP",
-  },
-  AccountB: {
-    AABG: "AAAB",
-    "555555555": "AAAB",
-    AAX: "AAX",
-    AAY: "AAY",
-  },
-  "AccountC": {
-    AABG: "AAAB",
-    AABH: "AAAT",
-    "111111111": "AAAT",
-    AABI: "AAAQ",
-    AABJ: "AAAS",
-    AABK: "AAAU",
-    AAAU: "AAAU",
-    HLX: "AABB",
-    AABO: "AAAW",
-    AABL: "AAAV",
-    AABM: "AAAA",
-    AABN: "AAAA",
-    "222222222": "AAAA",
-    "333333333": "AAAC",
-    "333333334": "AAAC",
-    "444444444": "AAAR",
-    AABP: "AAAR",
-    "555555555": "AAAB",
-    "666666666": "AAAT",
-    "777777777": "AABO",
-    "888888888": "AAAQ",
-    "999999999": "AAAP",
-    "101010101": "AAAD",
-    "202020202": "AAZ",
-    "303030303": "AABA",
-    505050505: "AAAP",
-    "404040404": "AAAP",
+  "<account>": {
+    "<old_symbol>": "<current_ticker>",
   },
 } as const;
 
-/** CUSIP → ticker (applied round). A symbol that's all digits maps here. */
+/** CUSIP → ticker. A symbol that's all digits maps here. Sample shape only. */
 export const CUSIP_MAP = {
-  "666666666": "AAAT",
-  "777777777": "AABO",
-  "888888888": "AAAQ",
-  "999999999": "AAAP",
-  "101010101": "AAAD",
-  "202020202": "AAZ",
-  "303030303": "AABA",
-  "555555555": "AAAB",
-  "444444444": "AAAR",
-  "222222222": "AAAA",
-  "333333333": "AAAC",
-  "111111111": "AAAT",
-  505050505: "AAAP",
-  "404040404": "AAAP",
+  "<9_digit_cusip>": "<current_ticker>",
 } as const;
 
 /** A fully-numeric symbol is a CUSIP (resolved via CUSIP_MAP). */
 export const CUSIP_RE = /^\d{6,9}$/;
 
-/** The 3 accounts' XML + CSV file naming pattern (timestamped Schwab exports). */
+/** The accounts' XML + CSV file naming pattern (timestamped Schwab exports). */
 export const SCHWAB_SOURCES = [
   {
-    account: "AccountA",
-    xml: "AccountA_ZZZ001_Transactions_20200101-190155.xml",
-    csv: "AccountA-Positions-2020-01-01-170551.csv",
+    account: "<account_1>",
+    xml: "<account>_Transactions_<timestamp>.xml",
+    csv: "<account>-Positions-<date>.csv",
   },
   {
-    account: "AccountB",
-    xml: "Designated_Bene_Individual_ZZZ002_Transactions_20200101-190148.xml",
-    csv: "Designated Bene Individual-Positions-2020-01-01-170508.csv",
+    account: "<account_2>",
+    xml: "<account>_Transactions_<timestamp>.xml",
+    csv: "<account>-Positions-<date>.csv",
   },
   {
-    account: "AccountC",
-    xml: "AccountC_from_IRA_ZZZ003_Transactions_20200101-190202.xml",
-    csv: "AccountC from IRA-Positions-2020-01-01-170611.csv",
+    account: "<account_3>",
+    xml: "<account>_Transactions_<timestamp>.xml",
+    csv: "<account>-Positions-<date>.csv",
   },
 ] as const;
 
@@ -166,32 +96,24 @@ export const ACTION_TAXONOMY = {
   REINVEST_ACTIONS: ["Qual Div Reinvest"] as const,
 } as const;
 
-/** Transfer-in date — the portfolio's opening position (2023-05-30). */
-export const TRANSFER_DATE = "2023-05-30";
+/**
+ * The opening-position cutoff. Transactions BEFORE the transfer-in date are
+ * out of model (the portfolio began with an in-kind/transfer opening).
+ * SENTINEL — replace with the date the operator's own portfolio opened.
+ */
+export const TRANSFER_DATE = "1999-12-31";
 
 /**
- * The 10 commission/fee-free OTC tickers Google Finance (and yfinance) may not
- * quote — manual price entry required. (AABC/AABB are separately quote-less by
- * design; the audit flags them as unquoted-not-bug.)
+ * Manual-price set — an operator lists the tickers their quote source
+ * doesn't price, so Decant knows to fetch/enter them manually. SHAPE only.
  */
-export const UNQUOTED = [
-  "AAAS",
-  "AAAE",
-  "AAAR",
-  "AAAF",
-  "AABE",
-  "AABB",
-  "AABC",
-  "AABD",
-  "AAAA",
-  "AABF",
-] as const;
+export const UNQUOTED = ["<unquoted_ticker>"] as const;
 
 /**
- * The known-gap whitelist for replay reconciliation: 185 AABC rights shares
- * ($0) have no XML record — cosmetic, value $0.
+ * Known-gap whitelist for replay reconciliation — symbols whose recorded
+ * shares ($0) have no broker transaction record. SHAPE only.
  */
-export const REPLAY_KNOWN_GAPS = ["AABC"] as const;
+export const REPLAY_KNOWN_GAPS = ["<known_gap_symbol>"] as const;
 
 /** The replay's reconcile gate: pre-transfer Buy/Sell history is out of model. */
 export const isPreTransfer = (isoDate: string) =>

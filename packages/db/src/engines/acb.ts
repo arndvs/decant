@@ -2,8 +2,8 @@
  * ACB engine — adjusted cost base as a DERIVED view over open lots.
  *
  * Sheet: ACB is the Calc TL running window (P/Q/R → R = ACB Post-Trx), and
- * `ACB/share = R/O` (per (sym,acct)). The sheet's verified ACB gate is
- * **$25,000** total across open positions (Cost Base, Holdings F/K).
+ * `ACB/share = R/O` (per (sym,acct)). The sheet's verified ACB total (across
+ * open positions) is the reconciliation fixture for this derived view.
  *
  * Design (schema.md): lots are the source of truth; ACB is NEVER stored —
  * it's computed as weighted-avg of open-lot basis. This keeps the sheet's
@@ -70,7 +70,7 @@ export function acbPortfolio(lots: Lot[]) {
 
   return {
     positions,
-    /** Portfolio-wide ACB (the $25,000 gate). */
+    /** Portfolio-wide ACB total (the reconciliation fixture). */
     total,
     /** Weighted-avg ACB/share across the whole portfolio. */
     averagePerShare: totalQty > 0 ? total / totalQty : 0,

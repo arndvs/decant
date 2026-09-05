@@ -19,6 +19,8 @@ export interface RebalanceStrategy {
   positionCap: number;
   /** the inherited-IRA deadline year (for tranche awareness) */
   iraDeadlineYear?: number;
+  /** the account label that is the inherited IRA (the sort facility). */
+  inheritedIraAccount?: string;
 }
 
 /** A current position (derived from lots). */
@@ -97,10 +99,14 @@ export interface RebalanceResult {
 /**
  * Expected-upside tier for an IRA holding (plan D4):
  * high-upside/wide-outcome names first (developers, explorers), steady
- * compounders last (WPM/FNV/AAAB-style). LEU/Centrus in tranches.
+ * compounders last. Tiers below are DECLARATIVE (public market behavior),
+ * not a list of any real portfolio's positions — an operator maps their
+ * own tickers onto these tiers at runtime.
  */
-const HIGH_UPSIDE_HINTS = new Set(["AAAG", "EU", "AAAE", "AAAR", "AAAF", "AAAQ", "DNN", "ONTO"]);
-const COMPOUNDER_HINTS = new Set(["WPM", "FNV", "AAAB", "GOLD", "AABG", "KGC", "AEMI"]);
+const HIGH_UPSIDE_HINTS = new Set<string>([""]);
+  // ← populated by the operator (tier 0 = high-upside / wide-outcome)
+const COMPOUNDER_HINTS = new Set<string>([""]);
+  // ← populated by the operator (tier 2 = steady compounders, leave last)
 
 function upsideTier(symbol: string): number {
   if (HIGH_UPSIDE_HINTS.has(symbol)) return 0;
@@ -168,7 +174,8 @@ export function rebalance(
     .reduce((s, c) => s + c.excessDollars, 0);
 
   // 4. IRA sort — inherited-IRA holdings classified Sell/Distribute.
-  const iraPositions = positions.filter((p) => p.account === "AccountC");
+  const iraAccount = strategy.inheritedIraAccount ?? "<inherited_ira_account>";
+  const iraPositions = positions.filter((p) => p.account === iraAccount);
   const iraSort: IraSortRow[] = iraPositions.map((p) => {
     const weight = p.marketValue / total;
     const over = weight > POSITION_CAP;

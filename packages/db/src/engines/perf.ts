@@ -1,18 +1,17 @@
 /**
  * Performance engine — monthly money-weighted returns (the override method).
  *
- * Ports the applied sheet method (load-monthly-perf.py + fix-monthly-perf.py):
+ * The override method (a pure function — transfer amount is an input):
  *   N = Portfolio Starting Value  = prior month-end total value (0 for first)
- *   O = Contributions             = transfer-in for May-2023, else 0
- *   P = Withdrawals               = 0 (no cash withdrawals in data)
+ *   O = Contributions             = transfer-in for the opening month, else 0
+ *   P = Withdrawals               = 0
  *   Q = Investment returns        = R − N − O − P
  *   R = Portfolio Ending Value    = month-end total value from daily series
  *   S = Dividends Received        = sum of dividend rows that month
  *   T = Portfolio Return (MWR)    = Q / N  (guard N=0 → 0)
  *
- * The portfolio's opening transfer-in:
- *   TRANSFER_AMOUNT = 100000 (2023-05-30), the Internal-Transfer opening.
- * Perf start date = 2023-05-30 (PERF_START_SERIAL 45076).
+ * The transfer-in (opening position) amount is supplied by the caller;
+ * no private portfolio facts are baked in here.
  */
 export interface DailyValue {
   date: string; // ISO YYYY-MM-DD

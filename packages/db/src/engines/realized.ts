@@ -16,7 +16,8 @@
  * only the REASON most W=0 sells exist. Using a flag would re-introduce
  * the class of bug: a genuinely-sold position could be flagged as a leg.
  */
-export type AccountName = "AccountA" | "AccountB" | "AccountC";
+/** Account label — generic; real account names come from the operator's config. */
+export type AccountName = string;
 
 /** A sale-row's inputs — mirrors one Calc TL sell row after FX. */
 export interface SaleRow {
@@ -49,7 +50,7 @@ export interface RealizedRow {
  * Mirrors the sheet: `if(AND(C="Sell", U>0, AP>0), W − AP×AG, 0)`.
  *
  * The sheet stores X as a per-row cell; SUMIFS sums the rounded display
- * cents. To reproduce the oracle ($150.00 / $150.00) exactly, round each
+ * cents. To reproduce the reconciliation fixture exactly, round each
  * row's gain to cents BEFORE totalling (the sheet's row precision).
  */
 export function realizedForSale(row: SaleRow): RealizedRow {

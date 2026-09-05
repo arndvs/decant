@@ -51,7 +51,7 @@
 
 | Col | Meaning | Formula |
 |---|---|---|
-| AA | **Share price trend** (sparkline) | `=IF($B10="","",SPARKLINE(GOOGLEFINANCE($B10,"price",TODAY()-$AA$8,TODAY(),"daily"),…))` — **AABC/AABB = 2 #N/A (manual-price, intentional)** |
+| AA | **Share price trend** (sparkline) | `=IF($B10="","",SPARKLINE(GOOGLEFINANCE($B10,"price",TODAY()-$AA$8,TODAY(),"daily"),…))` — quote-less/manual-price tickers show #N/A (intentional) |
 | AB | FX rate | `=IF($B10="","",INDEX(Calculations!$C$331:$G$335,match($C10,…),match(Dashboard!$C$3,…)))` |
 | AD | Qty at start | `=SUMIFS('Calc Trade Log'!$AC:$AC,D=$B10,…)` (perf-start) |
 | AE | GF price (start) | `=if($AU10<>"Y",if(Dashboard!$C$53>=today(),googlefinance($B10),…),…)` |
@@ -70,7 +70,7 @@
 | AT | **Latest txn date** | `=MAXIFS('Calc Trade Log'!$B:$B,D=$B10,$B:$B,"<="&Calculations!C2244)` — the lookup anchor |
 | AU | "quoted in cents?" | `=Setup!H52` |
 | AV | Size rank | `=iferror(rank($V10,$V$10:$V$259,0)+COUNTIFS($V$10:V10,$V10)-1,"")` |
-| **AX/AY/AZ** | **# Shares by Account** (AccountA/AccountB/AccountC) | `=sumifs('Calc Trade Log'!$AA,$D=$B10,C="Buy",I=acct)−sumifs(…Sell)` — **today's per-account qty** |
+| **AX/AY/AZ** | **# Shares by Account** (per configured account) | `=sumifs('Calc Trade Log'!$AA,$D=$B10,C="Buy",I=acct)−sumifs(…Sell)` — **today's per-account qty** |
 | BA..BF | TFSA/RRSP/RESP… template leftovers | same pattern (empty) |
 
 ## Key facts for the port

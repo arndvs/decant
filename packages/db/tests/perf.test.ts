@@ -9,17 +9,17 @@ import {
 } from "../src/engines/perf";
 
 const daily: DailyValue[] = [
-  // May-2023: transfer month. Month-end = 100,000 (the opening).
+  // Opening month (transfer): month-end = TRANSFER_AMOUNT (synthetic).
   { date: "2023-05-30", value: 100000 },
-  // June-2023: end 121,000
-  { date: "2023-06-15", value: 120500 },
-  { date: "2023-06-30", value: 121000 },
-  // July-2023: end 119,500 (a down month)
-  { date: "2023-07-03", value: 121200 },
-  { date: "2023-07-31", value: 119500 },
-  // Aug-2023: end 122,000 (latest)
-  { date: "2023-08-02", value: 120000 },
-  { date: "2023-08-31", value: 122000 },
+  // June: end 101,000
+  { date: "2023-06-15", value: 100500 },
+  { date: "2023-06-30", value: 101000 },
+  // July: end 99,500 (a down month)
+  { date: "2023-07-03", value: 101200 },
+  { date: "2023-07-31", value: 99500 },
+  // Aug: end 102,000 (latest)
+  { date: "2023-08-02", value: 100000 },
+  { date: "2023-08-31", value: 102000 },
 ];
 
 const divs: MonthlyDividend[] = [
@@ -32,8 +32,8 @@ describe("monthEndValues — last value per month", () => {
   it("keeps the final value in each month", () => {
     const ends = monthEndValues(daily);
     expect(ends.get("2023-05")).toBeCloseTo(100000, 2);
-    expect(ends.get("2023-06")).toBeCloseTo(121000, 2);
-    expect(ends.get("2023-08")).toBeCloseTo(122000, 2);
+    expect(ends.get("2023-06")).toBeCloseTo(101000, 2);
+    expect(ends.get("2023-08")).toBeCloseTo(102000, 2);
   });
 });
 
@@ -60,21 +60,21 @@ describe("monthlyPerformance — the override method", () => {
 
     // June: N = May R, O = 0, Q = R − N, divs = 150
     const jun = rows[1];
-    expect(jun.startingValue).toBeCloseTo(100000, 2);
+    expect(jun.startingValue).toBeCloseTo(TRANSFER_AMOUNT, 2);
     expect(jun.contributions).toBe(0);
-    expect(jun.returns).toBeCloseTo(121000 - 100000, 2);
+    expect(jun.returns).toBeCloseTo(101000 - TRANSFER_AMOUNT, 2);
     expect(jun.dividends).toBeCloseTo(150, 2);
-    expect(jun.returnPct).toBeCloseTo((121000 - 100000) / 100000, 8);
+    expect(jun.returnPct).toBeCloseTo((101000 - TRANSFER_AMOUNT) / TRANSFER_AMOUNT, 8);
 
     // July: down month, Q negative, divs 75
     const jul = rows[2];
-    expect(jul.startingValue).toBeCloseTo(121000, 2);
+    expect(jul.startingValue).toBeCloseTo(101000, 2);
     expect(jul.returnPct).toBeLessThan(0);
     expect(jul.dividends).toBeCloseTo(75, 2);
 
     // Aug: N = July R
     const aug = rows[3];
-    expect(aug.startingValue).toBeCloseTo(119500, 2);
+    expect(aug.startingValue).toBeCloseTo(99500, 2);
   });
 
   it("guards N=0 (first month, no prior value)", () => {

@@ -2,9 +2,9 @@
  * Dividends engine — sums dividend income from transaction rows.
  *
  * Sheet: Dividends tab = SUMIFS over Calc TL col AK (`Amount` for rows
- * with `C="Dividend"`), filtered to current holdings. Verified gate:
- * **$5,000 total** with per-year split:
- *   2022 $405.53 · 2023 $1,340.41 · 2024 $1,225.50 · 2025 $1,397.49 · 2026 $767.85
+ * with `C="Dividend"`), filtered to current holdings. The portfolio's
+ * verified dividends total (with per-year split) is the reconciliation
+ * fixture for this engine.
  *
  * Port: iterate the append-only transactions table, take rows tagged
  * Dividend-like (the ACTION_TAXONOMY.DIV_ACTIONS from config), sum amount.
